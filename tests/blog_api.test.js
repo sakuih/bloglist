@@ -86,12 +86,25 @@ describe('basic testing for routes', () => {
     //logger.info("response.body.likes", response.body.likes)
     
     assert.strictEqual(response.body.likes, 0)
-  
-
 
   })
 
-  
+  test.only('If title or url is missing return error 400', async () => {
+    
+    const newBlogMissingTitleAndUrl = {
+      author: 'Clueless user',
+      likes: 10
+    }
+
+    const response = await api.post('/api/blogs')
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+      .send(newBlogMissingTitleAndUrl)
+
+
+
+
+  })
 
 })
 

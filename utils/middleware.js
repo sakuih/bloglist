@@ -8,7 +8,7 @@ const requestLogger = (request, response, next) => {
   next()
 }
 
-const errorHandler =  (error, request, response, next) {
+const errorHandler =  (error, request, response, next) => {
   logger.error(error.message)
 
   if (error.name === 'CastError') {
