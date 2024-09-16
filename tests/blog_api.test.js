@@ -7,6 +7,7 @@ const supertest = require('supertest')
 const app = require('../app')
 const api = supertest(app)
 const logger = require('../utils/logger')
+const { getDocuments } = require('../utils/helpers')
 
 
 describe('basic testing for routes', () => {
@@ -18,18 +19,17 @@ describe('basic testing for routes', () => {
       .expect(200)
       .expect('Content-type', /application\/json/)
 
-    
   })
 
   test.only('returns the correct amount of posts', async() => {
 
-    const serverRequest = await blogs.countDocuments({})
+    const checkTheBlogsFromDB = await blogs.countDocuments({})
     //logger.info("printing", serverRequest)
     
     const response = await api.get('/api/blogs')
     //logger.info("printing", response.body.length)
 
-    assert.deepEqual(response.body.length, serverRequest)
+    assert.deepEqual(response.body.length, checkTheBlogsFromDB)
   })
 
   test.only('Test for _id and id', async() => {
@@ -101,8 +101,46 @@ describe('basic testing for routes', () => {
       .expect('Content-Type', /application\/json/)
       .send(newBlogMissingTitleAndUrl)
 
+  })
+
+  test.only('Deletes one blog and verifies it', async () => {
+
+    const getBlogs = await api.get('/api/blogs')
 
 
+    const checkTheBlogsFromDB = await blogs.countDocuments({})
+    //logger.info(getDocuments())
+    const getBlogId = getBlogs.body[checkTheBlogsFromDB - 1].id
+    logger.info('getBlogId is : ', getBlogId)
+
+    const response = await api.delete(`/api/blogs/${getBlogId}`)
+      .expect(204)
+
+  })
+
+
+
+  test.only('Updates one blog', async () => {
+
+    const newUpdatedBlog = {
+      title: "test",
+      author: "test person",
+      url: "www.test.com",
+      likes: 1,
+    }
+
+    const checkTheBlogsFromDB = await blogs.countDocuments({})
+    const getBlogs = await api.get('/api/blogs/')
+
+    const getId = getBlogs.body[checkTheBlogsFromDB - 1].id
+    logger.info("getId ", getId)
+
+    await api.put(`/api/blogs/${getId}`)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+      .send(newUpdatedBlog)
+    
+    
 
   })
 
@@ -111,11 +149,4 @@ describe('basic testing for routes', () => {
 after (async () => {
   await mongoose.connection.close()
 })
-
-
-
-
-
-
-
 
