@@ -1,18 +1,20 @@
-const { test, after, describe} = require('node:test')
+const { beforeEach, test, after, describe} = require('node:test')
 const assert = require('assert')
 const mongoose = require('mongoose')
 const blogs = require('../models/blog')
+const User = require('../models/user')
 require('express-async-errors')
 const supertest = require('supertest')
 const app = require('../app')
 const api = supertest(app)
 const logger = require('../utils/logger')
 const { getDocuments } = require('../utils/helpers')
+const bcrypt = require('bcrypt')
 
 
 describe('basic testing for routes', () => {
 
-  test.only('get request returns a json', async() => {
+  test('get request returns a json', async() => {
 
     await api
       .get('/api/blogs/')
@@ -21,7 +23,7 @@ describe('basic testing for routes', () => {
 
   })
 
-  test.only('returns the correct amount of posts', async() => {
+  test('returns the correct amount of posts', async() => {
 
     const checkTheBlogsFromDB = await blogs.countDocuments({})
     //logger.info("printing", serverRequest)
@@ -32,7 +34,7 @@ describe('basic testing for routes', () => {
     assert.deepEqual(response.body.length, checkTheBlogsFromDB)
   })
 
-  test.only('Test for _id and id', async() => {
+  test('Test for _id and id', async() => {
 
     const request = await api.get('/api/blogs')
     //logger.info(request.body[0].id)
@@ -43,7 +45,7 @@ describe('basic testing for routes', () => {
   })
 
 
-  test.only('post request returns success', async() => {
+  test('post request returns success', async() => {
 
     const newBlog = {
       title: "Introduction to C++",
@@ -70,7 +72,7 @@ describe('basic testing for routes', () => {
   })
 
 
-  test.only('Check if the likes property exists and if not declare it to null', async() => {
+  test('Check if the likes property exists and if not declare it to null', async() => {
 
     const newBlogMissingLikes = {
       title: "Introduction to web development",
@@ -89,7 +91,7 @@ describe('basic testing for routes', () => {
 
   })
 
-  test.only('If title or url is missing return error 400', async () => {
+  test('If title or url is missing return error 400', async () => {
     
     const newBlogMissingTitleAndUrl = {
       author: 'Clueless user',
@@ -103,7 +105,7 @@ describe('basic testing for routes', () => {
 
   })
 
-  test.only('Deletes one blog and verifies it', async () => {
+  test('Deletes one blog and verifies it', async () => {
 
     const getBlogs = await api.get('/api/blogs')
 
@@ -120,7 +122,7 @@ describe('basic testing for routes', () => {
 
 
 
-  test.only('Updates one blog', async () => {
+  test('Updates one blog', async () => {
 
     const newUpdatedBlog = {
       title: "test",
@@ -139,9 +141,48 @@ describe('basic testing for routes', () => {
       .expect(200)
       .expect('Content-Type', /application\/json/)
       .send(newUpdatedBlog)
-    
-    
+  })
+  
+})
 
+describe('authentication tests', () => {
+  beforeEach( async () => {
+    await User.deleteMany({})
+
+    const passwordHash = await bcrypt.hash('secret', 10)
+    const user = new User({ username: 'root', passwordHash})
+
+    await user.save({})
+  })
+
+  test.only('creating a user should return 201', async () => {
+
+    const checkTheBlogsFromDB = await User.countDocuments({})
+
+    const newUser = {
+      username: 'MERNstack',
+      name: 'MERN stack coder',
+      password: 'coding',
+    }
+
+    await api 
+      .post('/api/users')
+      .send(newUser)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const checkUsersAtEnd = await User.countDocuments({})
+
+    assert.strictEqual(checkUsersAtEnd, checkTheBlogsFromDB + 1)
+
+  })
+
+  test.only('get a list of users', async () => {
+    const response = await api
+      .get('/api/users')
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+    logger.info("users list", response.body)
   })
 
 })
