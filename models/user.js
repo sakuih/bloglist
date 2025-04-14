@@ -1,13 +1,31 @@
 const mongoose = require('mongoose')
 
 const userSchema = new mongoose.Schema({
-  username: String,
+  username: {
+    type: String,
+    unique: true,
+    required: true,
+    /*
+    validate: {
+      validator: async function (value) {
+        const user = await mongoose.models.User.findOne({username : value})
+        if (user) {
+          const error = new mongoose.Error('Username already exists')
+          error.status = 400
+          throw error
+        }
+        return true
+      },
+      message: 'Username already exists'
+    },
+    */
+  },
   name: String,
   passwordHash: String,
-  notes: [
+  blogs: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Note'
+      ref: 'Blog'
     }
   ],
 })
@@ -19,9 +37,20 @@ userSchema.set('toJSON', {
     delete returnedObject.__v
     // the passwordHash should not be revealed
     delete returnedObject.passwordHash
-  }
+  },
+  virtuals: true
 })
 
+//userSchema.set('toObject', {virtuals : true})
+
+/*
+userSchema.virtual('blog', {
+  ref: 'Blog',
+  localField: 'id',
+  foreignField: 'author',
+  justone: false
+})
+*/
 const User = mongoose.model('User', userSchema)
 
 module.exports = User

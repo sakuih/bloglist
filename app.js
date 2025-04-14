@@ -4,7 +4,7 @@ const cors = require('cors')
 const config = require('./utils/config')
 const logger = require('./utils/logger')
 const blogRouter = require('./controllers/blogController')
-const usersRouter = require('./controllers/loginController')
+const usersRouter = require('./controllers/userController')
 const connection = require('./utils/connection')
 
 connection.connect()

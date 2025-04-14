@@ -1,31 +1,53 @@
 require('express-async-errors')
 const blogRouter = require('express').Router()
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const mongoose = require('mongoose')
+const {getExampleUser} = require('../utils/helpers')
 //const { errorHandler } = require('../utils/middleware')
 
+
 blogRouter.get('/', async (request, response) => {
-  const blogs = await Blog.find({})
+
+  /*
+  const users = await User.find().select('-passwordHash')
+
+  const usersWithBlogs = []
+
+  for (let user of users) {
+    const blogs = await Blog.find({user: user._id })
+
+    const userObj = user.toObject()
+
+    userObj.blogs = blogs
+
+    usersWithBlogs.push(userObj)
+  }
+  */
+
+  const blogs = await Blog.find({}).populate('user', {username: 1, name: 1, id: 1})
   response.status(200).json(blogs)
 })
 
 blogRouter.post('/', async (request, response) => {
-  
+  const title = request.body.title
+  const url = request.body.url
   let likes = request.body.likes
+
   if (request.body.likes === undefined)
    likes = 0
 
-  const title = request.body.title
-  const url = request.body.url
-
   if (title === undefined || url === undefined)
     return response.status(400).json({ error: 'Title and/or url are needed'})
+
+  const exampleUser = await User.findById("66e9877a3c4f399faa7ded5a")
 
   const newBlog = new Blog({
     title: request.body.title,
     author: request.body.author,
     url: request.body.url,
     likes: likes,
+    user: exampleUser,
 
   })
     
