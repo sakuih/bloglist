@@ -4,6 +4,7 @@ const Blog = require('../models/blog')
 const User = require('../models/user')
 const mongoose = require('mongoose')
 const {getExampleUser} = require('../utils/helpers')
+const {authenticateJWT} = require('../utils/middleware')
 //const { errorHandler } = require('../utils/middleware')
 
 
@@ -29,7 +30,7 @@ blogRouter.get('/', async (request, response) => {
   response.status(200).json(blogs)
 })
 
-blogRouter.post('/', async (request, response) => {
+blogRouter.post('/', authenticateJWT, async (request, response) => {
   const title = request.body.title
   const url = request.body.url
   let likes = request.body.likes

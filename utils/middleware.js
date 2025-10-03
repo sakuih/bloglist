@@ -9,7 +9,7 @@ const requestLogger = (request, response, next) => {
   next()
 }
 
-const errorHandler =  (error, request, response, next) => {
+const errorHandler = (error, request, response, next) => {
   logger.error(error.message)
 
   if (error.name === 'CastError') {
@@ -36,7 +36,7 @@ const errorHandler =  (error, request, response, next) => {
 
 
 
-function authenticateJWT (req, res, next) {
+const authenticateJWT = (req, res, next) => {
   //const token = req.headers['authorization']?.split(' ')[1]
   const authHeader = req.headers['authorization']
 

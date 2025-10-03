@@ -5,12 +5,14 @@ const config = require('./utils/config')
 const logger = require('./utils/logger')
 const blogRouter = require('./controllers/blogController')
 const usersRouter = require('./controllers/userController')
+const authRouter = require('./controllers/authController')
 const connection = require('./utils/connection')
 
 connection.connect()
 
 app.use(cors())
 app.use(express.json())
+app.use('/api/auth', authRouter)
 app.use('/api/blogs', blogRouter)
 app.use('/api/users', usersRouter)
 
