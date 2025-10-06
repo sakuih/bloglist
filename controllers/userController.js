@@ -59,7 +59,12 @@ usersRouter.post('/login', async (request, response) => {
   if (!isPasswordValid)
     return response.status(401).json({message: "Password is incorrect"})
 
-  const token = jwt.sign({username: user.username}, process.env.TOKEN_KEY, {expiresIn: '1h'})
+  const payload = {
+    id: user.id,
+    username: user.username
+  }
+
+  const token = jwt.sign(payload, process.env.TOKEN_KEY, {expiresIn: '1h'})
   response.json({ token })
 })
 

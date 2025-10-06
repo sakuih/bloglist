@@ -41,14 +41,14 @@ blogRouter.post('/', authenticateJWT, async (request, response) => {
   if (title === undefined || url === undefined)
     return response.status(400).json({ error: 'Title and/or url are needed'})
 
-  const exampleUser = await User.findById("66e9877a3c4f399faa7ded5a")
+  //const exampleUser = await User.findById("66e9877a3c4f399faa7ded5a")
 
   const newBlog = new Blog({
     title: request.body.title,
     author: request.body.author,
     url: request.body.url,
     likes: likes,
-    user: exampleUser,
+    user: request.user.id,
 
   })
     

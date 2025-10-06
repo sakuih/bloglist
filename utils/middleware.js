@@ -40,8 +40,8 @@ const authenticateJWT = (req, res, next) => {
   //const token = req.headers['authorization']?.split(' ')[1]
   const authHeader = req.headers['authorization']
 
-  if (!authHeader)
-    return res.status(403).json({message: 'Token is missing'})
+  if (!authHeader || !authHeader.startsWith('Bearer '))
+    return res.status(403).json({message: 'Token is missing or invalid'})
 
   const token = authHeader.split(' ')[1]
 
