@@ -3,13 +3,19 @@ const User = require('../models/user')
 const Blog = require('../models/blog')
 const usersRouter = require('express').Router()
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+
+
 //const {exampleUser} = require('../utils/helpers')
 
 
-usersRouter.post('/', async (request, response, error) => {
+usersRouter.post('/register', async (request, response, error) => {
   const { username, name, password } = request.body
   //const allUserNames = await User.find({ username })
 
+  const existingUser = await User.findOne({ username: request.username })
+  if (existingUser)
+    return response.status(400).json({ message: 'User already exists'})
   //const usernameSearch = allUserNames.some( item => item === username)
 
 
@@ -18,22 +24,43 @@ usersRouter.post('/', async (request, response, error) => {
 
 
 
-  const saltRounds = 10
-  const passwordHash = await bcrypt.hash(password, saltRounds)
+  const salt = await bcrypt.genSalt(10)
+  if (!salt)
+    return response.status(400).json({message: "failed to generate salt"})
+  const passwordHash = await bcrypt.hash(password, salt)
+  console.log(passwordHash)
+  console.log(password)
 
+  try {
+    const newUser = new User({
+      username,
+      name,
+      passwordHash
+    })
+    const savedUser = await newUser.save()
+    response.status(201).json(savedUser)
+  } catch (error) {
+    response.status(500).json({message: error.message})
+  }
 
-  //const user123 = 
+})
 
-  const user = new User({
-    username,
-    name,
-    passwordHash,
-    //user123,
+usersRouter.post('/login', async (request, response) => {
+  const { username, password } = request.body
+
+  const user = await User.findOne({
+    username
   })
 
-  const savedUser = await user.save({})
-  response.status(201).json(savedUser)
+  if (!user)
+    return response.status(401).json({message: "Invalid username or password"})
 
+  const isPasswordValid = await bcrypt.compare(password, user.passwordHash)
+  if (!isPasswordValid)
+    return response.status(401).json({message: "Password is incorrect"})
+
+  const token = jwt.sign({username: user.username}, process.env.TOKEN_KEY, {expiresIn: '1h'})
+  response.json({ token })
 })
 
 usersRouter.get('/', async(request, response) => {

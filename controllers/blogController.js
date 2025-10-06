@@ -71,11 +71,6 @@ blogRouter.put('/:id', async (request, response) => {
 
 })
 
-
-
 //blogRouter.use(errorHandler)
-
-
-
 
 module.exports = blogRouter
