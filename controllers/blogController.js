@@ -57,10 +57,27 @@ blogRouter.post('/', authenticateJWT, async (request, response) => {
 
 })
 
-blogRouter.delete('/:id', async (request, response) => {
+blogRouter.delete('/:id', authenticateJWT, async (request, response) => {
 
-  await Blog.findByIdAndDelete(request.params.id)
-  response.status(204).end()
+  const jwtUser = request.user.id
+
+  const dbBlog = await Blog.findById(request.params.id)
+
+  const dbUser = dbBlog.user.toString()
+  console.log("user", dbUser)
+  console.log("user", jwtUser)
+
+
+  if (jwtUser !== dbUser) {
+    console.log("user is not the owner of the blog")
+    response.status(403).end()
+  }
+
+  if (jwtUser === dbUser) {
+    console.log("user can be deleted")
+    await Blog.findByIdAndDelete(request.params.id)
+    response.status(204).end()
+  }
 
 })
 

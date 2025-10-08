@@ -12,7 +12,6 @@ connection.connect()
 
 app.use(cors())
 app.use(express.json())
-app.use('/api/auth', authRouter)
 app.use('/api/blogs', blogRouter)
 app.use('/api/users', usersRouter)
 
