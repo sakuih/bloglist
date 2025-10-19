@@ -10,15 +10,19 @@ const api = supertest(app)
 const logger = require('../utils/logger')
 const { getDocuments } = require('../utils/helpers')
 const bcrypt = require('bcrypt')
+const {authenticateJWT} = require("../utils/middleware");
+const {createSecretToken} = require("../utils/secretToken");
 
 
 describe('basic testing for routes', () => {
+  const token = createSecretToken()
 
   test('get request returns a json', async() => {
 
     await api
       .get('/api/blogs/')
       .expect(200)
+      .set('Authorization', `Bearer ${token}`)
       .expect('Content-type', /application\/json/)
 
   })
@@ -59,6 +63,7 @@ describe('basic testing for routes', () => {
     const response = await api.post('/api/blogs')
       .expect(201)
       .expect('Content-type', /application\/json/)
+      .set('Authorization', `Bearer ${token}`)
       .send(newBlog)
 
     const getBlogs = await api.get('/api/blogs')
@@ -81,6 +86,7 @@ describe('basic testing for routes', () => {
     }
 
     const response = await api.post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
       .expect(201)
       .expect('Content-Type', /application\/json/)
       .send(newBlogMissingLikes)
@@ -100,6 +106,7 @@ describe('basic testing for routes', () => {
 
     const response = await api.post('/api/blogs')
       .expect(400)
+      .set('Authorization', `Bearer ${token}`)
       .expect('Content-Type', /application\/json/)
       .send(newBlogMissingTitleAndUrl)
 
@@ -113,9 +120,11 @@ describe('basic testing for routes', () => {
     const checkTheBlogsFromDB = await blogs.countDocuments({})
     //logger.info(getDocuments())
     const getBlogId = getBlogs.body[checkTheBlogsFromDB - 1].id
+
     logger.info('getBlogId is : ', getBlogId)
 
     const response = await api.delete(`/api/blogs/${getBlogId}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(204)
 
   })
@@ -146,6 +155,7 @@ describe('basic testing for routes', () => {
 })
 
 describe('authentication tests', () => {
+  const token = createSecretToken()
   beforeEach( async () => {
     await User.deleteMany({})
 
@@ -166,8 +176,10 @@ describe('authentication tests', () => {
     }
 
     await api 
-      .post('/api/users')
+      //.post('/api/users')
+      .post('/api/users/register')
       .send(newUser)
+      .set('Authorization', `Bearer ${token}`)
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
@@ -179,10 +191,49 @@ describe('authentication tests', () => {
 
   test.only('get a list of users', async () => {
     const response = await api
-      .get('/api/users')
+      //.get('/api/users')
+      .get('/api/users/register')
       .expect(200)
       .expect('Content-Type', /application\/json/)
     logger.info("users list", response.body)
+  })
+
+  test.only("test for short username", async () => {
+    const newUser = {
+      username: "ab",
+      name: "test",
+      password: "test"
+    }
+    const response = await api
+      .post('/api/users/register')
+      .send(newUser)
+      .expect(400)
+  })
+
+  test.only("test for short password", async () => {
+    const newUser = {
+      username: "test",
+      name: "test",
+      password: "ab"
+    }
+
+    const response = await api
+      .post('/api/users/register')
+      .send(newUser)
+      .expect(400)
+  })
+
+  test.only("test for unique username", async () => {
+    const newUser = {
+      username: "test",
+      name: "test",
+      password: "test"
+    }
+
+    const response = await api
+      .post('/api/users/register')
+      .send(newUser)
+      .expect(400)
   })
 
 })

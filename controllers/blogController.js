@@ -57,7 +57,7 @@ blogRouter.post('/', authenticateJWT, async (request, response) => {
 
 })
 
-blogRouter.delete('/:id', authenticateJWT, async (request, response) => {
+blogRouter.delete('/:id', authenticateJWT, async (request, response, error, next) => {
 
   const jwtUser = request.user.id
 
@@ -70,7 +70,8 @@ blogRouter.delete('/:id', authenticateJWT, async (request, response) => {
 
   if (jwtUser !== dbUser) {
     console.log("user is not the owner of the blog")
-    response.status(403).end()
+    next(error)
+    //response.status(403).end()
   }
 
   if (jwtUser === dbUser) {

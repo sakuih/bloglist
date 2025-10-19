@@ -13,7 +13,7 @@ usersRouter.post('/register', async (request, response, error) => {
   const { username, name, password } = request.body
   //const allUserNames = await User.find({ username })
 
-  const existingUser = await User.findOne({ username: request.username })
+  const existingUser = await User.findOne({ username })
   if (existingUser)
     return response.status(400).json({ message: 'User already exists'})
   //const usernameSearch = allUserNames.some( item => item === username)
@@ -21,7 +21,6 @@ usersRouter.post('/register', async (request, response, error) => {
 
   if (username.length < 3 || password.length < 3)
     response.status(400).json({"message" : "username and password should more than 3 characters long"})
-
 
 
   const salt = await bcrypt.genSalt(10)
@@ -47,6 +46,7 @@ usersRouter.post('/register', async (request, response, error) => {
 
 usersRouter.post('/login', async (request, response) => {
   const { username, password } = request.body
+
 
   const user = await User.findOne({
     username
