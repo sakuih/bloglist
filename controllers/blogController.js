@@ -4,7 +4,8 @@ const Blog = require('../models/blog')
 const User = require('../models/user')
 const mongoose = require('mongoose')
 const {getExampleUser} = require('../utils/helpers')
-const {authenticateJWT} = require('../utils/middleware')
+const {authenticateJWT, tokenExtractor} = require('../utils/middleware')
+const {error} = require("../utils/logger");
 //const { errorHandler } = require('../utils/middleware')
 
 
@@ -30,7 +31,7 @@ blogRouter.get('/', async (request, response) => {
   response.status(200).json(blogs)
 })
 
-blogRouter.post('/', authenticateJWT, async (request, response) => {
+blogRouter.post('/', authenticateJWT, async (request, response, next) => {
   const title = request.body.title
   const url = request.body.url
   let likes = request.body.likes
@@ -41,6 +42,7 @@ blogRouter.post('/', authenticateJWT, async (request, response) => {
   if (title === undefined || url === undefined)
     return response.status(400).json({ error: 'Title and/or url are needed'})
 
+  //next(error)
   //const exampleUser = await User.findById("66e9877a3c4f399faa7ded5a")
 
   const newBlog = new Blog({
@@ -57,28 +59,34 @@ blogRouter.post('/', authenticateJWT, async (request, response) => {
 
 })
 
-blogRouter.delete('/:id', authenticateJWT, async (request, response, error, next) => {
+blogRouter.delete('/:id', authenticateJWT, async (request, response, next) => {
 
-  const jwtUser = request.user.id
+    const jwtUser = request.user.id
 
-  const dbBlog = await Blog.findById(request.params.id)
+    const dbBlog = await Blog.findById(request.params.id)
 
-  const dbUser = dbBlog.user.toString()
-  console.log("user", dbUser)
-  console.log("user", jwtUser)
+    if (!dbBlog) {
+      return response.status(404).end()
+    }
+
+    const dbUser = dbBlog.user.toString()
+    console.log("user", dbUser)
+    console.log("user", jwtUser)
 
 
-  if (jwtUser !== dbUser) {
-    console.log("user is not the owner of the blog")
-    next(error)
-    //response.status(403).end()
-  }
+    if (jwtUser !== dbUser) {
+      console.log("user is not the owner of the blog")
+      //next(error)
+      response.status(403).end("user is not the owner of the blog")
+    }
 
-  if (jwtUser === dbUser) {
-    console.log("user can be deleted")
-    await Blog.findByIdAndDelete(request.params.id)
-    response.status(204).end()
-  }
+    if (jwtUser === dbUser) {
+      console.log("user can be deleted")
+      await Blog.findByIdAndDelete(request.params.id)
+      response.status(204).end()
+    }
+
+  //response.status(204).end()
 
 })
 

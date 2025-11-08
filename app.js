@@ -7,13 +7,16 @@ const blogRouter = require('./controllers/blogController')
 const usersRouter = require('./controllers/userController')
 const authRouter = require('./controllers/authController')
 const connection = require('./utils/connection')
+const {tokenExtractor, errorHandler} = require("./utils/middleware");
 
 connection.connect()
 
 app.use(cors())
 app.use(express.json())
+
 app.use('/api/blogs', blogRouter)
 app.use('/api/users', usersRouter)
+app.use(errorHandler)
 
 module.exports = app
 

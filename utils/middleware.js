@@ -1,5 +1,6 @@
 const logger = './logger'
 const jwt = require('jsonwebtoken')
+const {getExampleUser} = require("./helpers");
 
 const requestLogger = (request, response, next) => {
   logger.info('Method:', request.method)
@@ -10,7 +11,7 @@ const requestLogger = (request, response, next) => {
 }
 
 const errorHandler = (error, request, response, next) => {
-  logger.error(error.message)
+  //logger.error(error.message)
 
   if (error.name === 'CastError') {
     return response.status(400).send({success: false, error: 'malformatted id', status: error.status })
@@ -28,7 +29,7 @@ const errorHandler = (error, request, response, next) => {
   })
   } 
   
-  next(error)
+  //next(error)
 }
 
 
@@ -37,8 +38,8 @@ const authenticateJWT = (req, res, next) => {
   //const token = req.headers['authorization']?.split(' ')[1]
   const authHeader = req.headers['authorization']
 
-  if (!authHeader || !authHeader.startsWith('Bearer '))
-    return res.status(403).json({message: 'Token is missing or invalid'})
+  //if (!authHeader || !authHeader.startsWith('Bearer '))
+    //return res.status(403).json({message: 'Token is missing or invalid'})
 
   const token = authHeader.split(' ')[1]
 
@@ -51,12 +52,26 @@ const authenticateJWT = (req, res, next) => {
   })
   
 }
+/*
+const tokenExtractor = (req, res, next) => {
+  const authHeader = req.headers['authorization']
+  if (authHeader && (authHeader.startsWith('Bearer ') || authHeader.startsWith('Token '))) {
+    req.tokne = authHeader.split(' ')[1]
+  }
+  else {
+    return null
+  }
+  next()
+}
 
 
 module.exports = authenticateJWT
 
+ */
+
 module.exports = {
   requestLogger,
   errorHandler,
-  authenticateJWT
+  authenticateJWT,
+  //tokenExtractor
 }

@@ -19,7 +19,7 @@ usersRouter.post('/register', async (request, response, error) => {
   //const usernameSearch = allUserNames.some( item => item === username)
 
 
-  if (username.length < 3 || password.length < 3)
+  if (username.length < 4 || password.length < 4)
     response.status(400).json({"message" : "username and password should more than 3 characters long"})
 
 

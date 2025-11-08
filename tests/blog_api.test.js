@@ -17,6 +17,15 @@ const {createSecretToken} = require("../utils/secretToken");
 describe('basic testing for routes', () => {
   const token = createSecretToken()
 
+  beforeEach( async () => {
+    await User.deleteMany({})
+
+    const passwordHash = await bcrypt.hash('secret', 10)
+    const user = new User({ username: 'root', passwordHash})
+
+    await user.save({})
+  })
+
   test('get request returns a json', async() => {
 
     await api
@@ -115,19 +124,21 @@ describe('basic testing for routes', () => {
   test('Deletes one blog and verifies it', async () => {
 
     const getBlogs = await api.get('/api/blogs')
-
-
     const checkTheBlogsFromDB = await blogs.countDocuments({})
     //logger.info(getDocuments())
     const getBlogId = getBlogs.body[checkTheBlogsFromDB - 1].id
-
     logger.info('getBlogId is : ', getBlogId)
 
-    const response = await api.delete(`/api/blogs/${getBlogId}`)
+    await api.delete(`/api/blogs/${getBlogId}`)
       .set('Authorization', `Bearer ${token}`)
       .expect(204)
 
+    const final = await blogs.countDocuments({})
+    expect(final).toBe(checkTheBlogsFromDB - 1)
+
+
   })
+
 
 
 
